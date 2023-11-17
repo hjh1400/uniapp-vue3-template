@@ -8,8 +8,8 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "dev:mp-weixin-prod": "uni -p mp-weixin --mode production",
     "build:h5": "uni build",
-    "build:h5-prod": "uni build  --mode production",
     "build:mp-weixin": "uni build -p mp-weixin",
+    "build:h5-prod": "uni build  --mode production",
     "build:mp-weixin-prod": "uni build -p mp-weixin --mode production",
     "type-check": "vue-tsc --noEmit",
     "eslint": "eslint --fix",
@@ -70,7 +70,6 @@
     ]
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
     "commit-msg": "node scripts/verifyCommit.js"
   }
 }

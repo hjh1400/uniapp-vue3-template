@@ -1,106 +1,156 @@
 <template>
   <view>
-    <view class="login-form-wrap">
-      <view class="title">
-        欢迎登录
-      </view>
-      <input v-model="tel" class="u-border-bottom" type="number" placeholder="请输入手机号">
-      <view class="u-border-bottom my-40rpx flex">
-        <input v-model="code" class="flex-1" type="number" placeholder="请输入验证码">
-        <view>
-          <u-code ref="uCodeRef" @change="codeChange" />
-          <u-button :text="tips" type="success" size="mini" @click="getCode" />
+    <view class="flex items-center bg-white pb-30rpx pl-30rpx pr-20rpx">
+      <u-form :model="form" ref="uForm">
+        <u-form-item label="姓名"><u-input v-model="form.name" /></u-form-item>
+        <u-form-item label="手机号"><u-input v-model="form.phoneCode" /></u-form-item>
+        <view class="section">
+          <view class="section__title">预约日期</view>
+          <picker :bindchange="bindPickerChange" :value="index" :range="array">
+            <view class="picker">
+              预约日期：{{array[index]}}
+            </view>
+          </picker>
         </view>
-      </view>
-      <button :style="[inputStyle]" class="login-btn" @tap="submit">
-        登录
-      </button>
+        <u-form-item label="预约时间">
+          <u-radio-group :model="value" @change="radioGroupChange">
+            <u-radio
+              @change="radioChange"
+              v-for="(item, index) in list" :key="index"
+              :name="item.name"
+              :disabled="item.disabled"
+              :label="item.name"
+            ></u-radio>
+          </u-radio-group>
+        </u-form-item>
+      </u-form>
+    </view>
 
-      <view class="alternative">
-        <view class="password">
-          密码登录
-        </view>
-        <view class="issue">
-          遇到问题
-        </view>
-      </view>
-    </view>
-    <view class="login-type-wrap">
-      <view class="item wechat">
-        <view class="icon">
-          <u-icon size="35" name="weixin-fill" color="rgb(83,194,64)" />
-        </view>
-        微信
-      </view>
-      <view class="item QQ">
-        <view class="icon">
-          <u-icon size="35" name="qq-fill" color="rgb(17,183,233)" />
-        </view>
-        QQ
-      </view>
-    </view>
-    <view class="hint">
-      登录代表同意
-      <text class="link">
-        用户协议、隐私政策，
-      </text>
-      并授权使用您的账号信息（如昵称、头像、收获地址）以便您统一管理
-    </view>
+
   </view>
 </template>
 
-<script setup lang="ts">
-import uCode from 'uview-plus/components/u-code/u-code.vue';
-import { setToken } from '@/utils/auth';
+<script>
+export default {
+  data() {
+    return {
+      form: {
+        name: '',
+        intro: '',
+        sex: ''
+      },
+      title: 'picker',
+      array: ['中国', '美国', '巴西', '日本'],
+      index: 0,
+      date: new Date(),
+      time: '12:01',
+      checkboxList: [
+        {
+          name: '苹果',
+          checked: false,
+          disabled: false
+        },
+        {
+          name: '雪梨',
+          checked: false,
+          disabled: false
+        },
+        {
+          name: '柠檬',
+          checked: false,
+          disabled: false
+        }
+      ],
+      radioList: [
+        {
+          name: '鲜甜',
+          disabled: false
+        },
+        {
+          name: '麻辣',
+          disabled: false
+        }
+      ],
+      radio: '',
+      switchVal: false,
+      list: [
+        {
+          name: 'apple',
+          disabled: false
+        },
+        {
+          name: 'banner',
+          disabled: false
+        },
+        {
+          name: 'orange',
+          disabled: false
+        }
+      ],
+      // u-radio-group的v-model绑定的值如果设置为某个radio的name，就会被默认选中
+      value: 'orange',
+      show: true,
+      lists: [
+        [
+          {
+            value: '1',
+            label: '江'
+          },
+          {
+            value: '2',
+            label: '湖'
+          }
+        ],
+        [
+          {
+            value: '3',
+            label: '夜'
+          },
+          {
+            value: '4',
+            label: '雨'
+          }
+        ],
 
-const tel = ref<string>('18502811111');
-const code = ref<string>('1234');
-const tips = ref<string>();
-const uCodeRef = ref<InstanceType<typeof uCode> | null>(null);
+      ],
+    };
+  },methods:{
+    // 回调参数为包含多个元素的数组，每个元素分别反应每一列的选择情况
+    confirm(e) {
+      console.log(e);
+    }, bindPickerChange: function(e) {
+      console.log('picker发送选择改变，携带值为', e.detail.value)
+      this.index = e.detail.value
+    },
+    bindDateChange: function(e) {
+      this.date = e.detail.value
+    },
+    bindTimeChange: function(e) {
+      this.time = e.detail.value
+    },
+    getDate(type) {
+      const date = new Date();
+      let year = date.getFullYear();
+      let month = date.getMonth() + 1;
+      let day = date.getDate();
 
-const inputStyle = computed<CSSStyleDeclaration>(() => {
-  const style = {} as CSSStyleDeclaration;
-  if (tel.value && code.value) {
-    style.color = '#fff';
-    style.backgroundColor = uni.$u.color.warning;
+      if (type === 'start') {
+        year = year - 60;
+      } else if (type === 'end') {
+        year = year + 2;
+      }
+      month = month > 9 ? month : '0' + month;
+      day = day > 9 ? day : '0' + day;
+      return `${year}-${month}-${day}`;
+    }
   }
-  return style;
-});
-
-function codeChange(text: string) {
-  tips.value = text;
-}
-
-function getCode() {
-  if (uCodeRef.value?.canGetCode) {
-    // 模拟向后端请求验证码
-    uni.showLoading({
-      title: '正在获取验证码',
-    });
-    setTimeout(() => {
-      uni.hideLoading();
-      uni.$u.toast('验证码已发送');
-      // 通知验证码组件内部开始倒计时
-      uCodeRef.value?.start();
-    }, 1000);
-  }
-  else {
-    uni.$u.toast('倒计时结束后再发送');
-  }
-}
-
-function submit() {
-  if (uni.$u.test.mobile(tel.value)) {
-    setToken('1234567890');
-    uni.reLaunch({ url: '/pages/tab/home/index' });
-  }
-}
+};
 </script>
 
 <style lang="scss" scoped>
 .login-form-wrap {
   margin: 80rpx auto 0;
-  width: 600rpx;
+  width: 400rpx;
 
   .title {
     margin-bottom: 100rpx;
@@ -163,5 +213,13 @@ function submit() {
   .link {
     color: $u-warning;
   }
+}
+
+.picker{
+  padding: 13px;
+  background-color: #FFFFFF;
+}
+.page {
+  padding-top: 80px;
 }
 </style>

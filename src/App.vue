@@ -2,11 +2,12 @@
 import { mpUpdate } from '@/utils/index';
 
 onLaunch(() => {
-  console.log('App Launch');
   // #ifdef MP
   mpUpdate();
   // #endif
 });
+
+
 onShow(() => {
   console.log('App Show');
 });
